@@ -222,23 +222,37 @@ if __name__ == '__main__':
     results = model.predict(img)
 
     # Extract plot elements (bbox, labels) from `predict()` results
-    r = results[0]
-    orig_img = r.orig_img  # Keep the original image
-    bboxes = r.boxes.xyxy.tolist()
-    labels = [id2class_map[str(int(c))] for c in r.boxes.cls.tolist()]
+    # Extract plot elements (bbox, labels) from `predict()` results
+r = results[0]
+orig_img = r.orig_img  # Keep the original image
+bboxes = r.boxes.xyxy.tolist()
+labels = [id2class_map[str(int(c))] for c in r.boxes.cls.tolist()]
 
-    # List to store the cropped number plates
-    number_plates = []
-    # List to store the OCR results
-    ocr_results = []
+# Flags to check if 'without helmet' is detected
+without_helmet_detected = False
+number_plate_detected = False
 
-    # Loop through detected bboxes and labels
+# List to store the cropped number plates
+number_plates = []
+# List to store the OCR results
+ocr_results = []
+
+# First loop to check if 'without helmet' is detected
+for bbox, label in zip(bboxes, labels):
+    if label == 'without helmet':
+        without_helmet_detected = True
+        break  # Exit loop early since 'without helmet' is found
+
+# If 'without helmet' is detected, proceed to apply OCR on number plates
+if without_helmet_detected:
+    print("No helmet detected, processing number plates for OCR...")
+
+    # Second loop to find 'number_plate' labels and apply OCR
     for bbox, label in zip(bboxes, labels):
         if label == 'number_plate':
             x_min, y_min, x_max, y_max = [int(n) for n in bbox]
             # Crop the number plate
             cropped_plate = orig_img[y_min:y_max, x_min:x_max]
-
 
             # Perform OCR on the cropped number plate
             ocr_text = perform_ocr(cropped_plate)
@@ -249,11 +263,13 @@ if __name__ == '__main__':
             plt.title(f'OCR Result: {ocr_text}')
             plt.axis('off')
             plt.show()
+else:
+    print("No helmet detected, skipping number plate OCR.")
 
-    # Print all OCR results
-    if ocr_results:
-        print("Detected Number Plates and OCR Results:")
-        for i, ocr_text in enumerate(ocr_results, 1):
-            print(f"Number Plate {i}: {ocr_text}")
-    else:
-        print("No number plates found.")
+# Print all OCR results
+if ocr_results:
+    print("Detected Number Plates and OCR Results:")
+    for i, ocr_text in enumerate(ocr_results, 1):
+        print(f"Number Plate {i}: {ocr_text}")
+else:
+    print("No number plates processed for OCR.")
