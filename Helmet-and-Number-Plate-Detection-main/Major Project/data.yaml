@@ -1,0 +1,8 @@
+names:
+- with helmet
+- without helmet
+- rider
+- number plate
+nc: 4
+train: C:\Users\User\Desktop\nishtha\train
+val: C:\Users\User\Desktop\nishtha\val
