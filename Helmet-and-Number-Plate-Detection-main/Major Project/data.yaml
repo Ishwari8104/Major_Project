@@ -4,5 +4,7 @@ names:
 - rider
 - number plate
 nc: 4
-train: C:\Users\User\Desktop\nishtha\train
-val: C:\Users\User\Desktop\nishtha\val
+train: C:\Users\Ishwari Datir\Desktop\Major_Project\Helmet-and-Number-Plate-Detection-main\Major
+  Project\train
+val: C:\Users\Ishwari Datir\Desktop\Major_Project\Helmet-and-Number-Plate-Detection-main\Major
+  Project\val

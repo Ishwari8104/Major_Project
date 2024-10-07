@@ -14,6 +14,7 @@ from matplotlib import pyplot as plt
 from ultralytics import YOLO
 import yaml
 import pytesseract
+import easyocr
 
 id2class_map = {
     '0': 'with helmet',
@@ -141,22 +142,20 @@ def plot_pred_image(image_name, id2class_map=id2class_map, class2color_map=class
             )
     plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
     plt.show()
-
+reader = easyocr.Reader(['en']) 
 # Function to perform OCR on a cropped number plate
 def perform_ocr(plate_image):
     gray = cv2.cvtColor(plate_image, cv2.COLOR_BGR2GRAY)
-    #_, thresh = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY)
-    resized = cv2.resize(gray, None, fx = 2, fy = 2,  interpolation = cv2.INTER_CUBIC)
-    blurred = cv2.GaussianBlur(resized, (5, 5), 0)
-    cv2.imshow("blur",blurred)
-    # Use pytesseract to do OCR on the grayscale image
-    ocr_result = pytesseract.image_to_string(blurred,lang ='eng',
-    config ='--oem 3 -l eng --psm 6 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -c classify_enable_learning=true')  # --psm 8 is for single word/character recognition
-    return ocr_result.strip()  # Strip any trailing newlines or spa
+    
+    # Use EasyOCR to detect text from the grayscale image
+    result = reader.readtext(gray, detail=0)  # Set detail=0 to return just the text, not bounding boxes
+    
+    # Return the first result if available
+    return result[0] if result else ''  # EasyOCR returns text as a list of strings
 
 if __name__ == '__main__':
     # Specify the path to tesseract executable
-    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+    
     print_data_size('train')
     print_class_count('train')
     print_data_size('val')
@@ -264,7 +263,7 @@ if without_helmet_detected:
             plt.axis('off')
             plt.show()
 else:
-    print("No helmet detected, skipping number plate OCR.")
+    print("Helmet detected, skipping number plate OCR.")
 
 # Print all OCR results
 if ocr_results:
